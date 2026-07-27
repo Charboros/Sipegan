@@ -13,6 +13,7 @@ class UserController extends Controller
     public function index()
     {
         $users = User::orderBy('created_at', 'desc')->paginate(15);
+
         return view('admin.users.index', compact('users'));
     }
 
@@ -41,6 +42,7 @@ class UserController extends Controller
         }
 
         $user->delete();
+
         return back()->with('success', 'Akun berhasil dihapus.');
     }
 }

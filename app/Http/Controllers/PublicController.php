@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Quota;
 use App\Models\Registration;
 use Illuminate\Http\Request;
 
@@ -9,15 +10,15 @@ class PublicController extends Controller
 {
     public function dashboard()
     {
-        $quotas = \App\Models\Quota::orderBy('month', 'asc')->get();
-        
+        $quotas = Quota::orderBy('month', 'asc')->get();
+
         // Optimasi: Ambil semua jumlah pendaftar per bulan dalam 1 kueri agregasi
         $usedMagangCounts = Registration::selectRaw('DATE_FORMAT(created_at, "%Y-%m") as month, COUNT(*) as total')
             ->where('type', 'magang')
             ->whereNotIn('status', ['ditolak'])
             ->groupBy('month')
             ->pluck('total', 'month');
-        
+
         $quotaData = [];
         foreach ($quotas as $q) {
             $usedMagang = $usedMagangCounts[$q->month] ?? 0;
@@ -113,13 +114,13 @@ class PublicController extends Controller
     {
         $request->validate([
             'email' => 'required|email',
-            'nim_nisn' => 'required|string'
+            'nim_nisn' => 'required|string',
         ]);
 
         $registrations = Registration::where('email', $request->email)
-                                    ->where('nim_nisn', $request->nim_nisn)
-                                    ->latest()
-                                    ->get();
+            ->where('nim_nisn', $request->nim_nisn)
+            ->latest()
+            ->get();
 
         if ($registrations->isEmpty()) {
             return back()->with('error', 'Data pendaftaran dengan Email dan NIM/NISN tersebut tidak ditemukan.');

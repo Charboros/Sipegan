@@ -20,11 +20,11 @@ return new class extends Migration
             $table->string('nim_nisn')->nullable();
             $table->string('institution')->nullable();
             $table->string('study_program')->nullable();
-            
+
             // Khusus Pendaftaran Penelitian
             $table->date('start_date')->nullable();
             $table->string('research_title')->nullable();
-            
+
             // Khusus Pendaftaran Magang
             $table->enum('participant_category', ['Sekolah Menengah Kejuruan', 'Perguruan Tinggi'])->nullable();
             $table->string('birth_place')->nullable();
@@ -34,10 +34,10 @@ return new class extends Migration
             $table->json('magang_months')->nullable();
             $table->string('advisor_name')->nullable();
             $table->string('advisor_phone')->nullable();
-            
+
             // Upload Surat Permohonan
             $table->string('document_path')->nullable();
-            
+
             $table->enum('status', ['menunggu', 'diterima', 'ditolak', 'selesai'])->default('menunggu');
             $table->timestamps();
         });

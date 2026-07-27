@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Registration;
-use App\Models\User;
 use Illuminate\Http\Request;
 
 class RegistrationController extends Controller
@@ -35,17 +34,17 @@ class RegistrationController extends Controller
     public function index(Request $request)
     {
         $registrations = Registration::query()
-            ->when($request->filled('search'), function($query) use ($request) {
+            ->when($request->filled('search'), function ($query) use ($request) {
                 $search = $request->search;
-                $query->where(function($q) use ($search) {
+                $query->where(function ($q) use ($search) {
                     $q->where('name', 'like', "%{$search}%")
-                      ->orWhere('nim_nisn', 'like', "%{$search}%")
-                      ->orWhere('institution', 'like', "%{$search}%");
+                        ->orWhere('nim_nisn', 'like', "%{$search}%")
+                        ->orWhere('institution', 'like', "%{$search}%");
                 });
             })
-            ->when($request->filled('year'), function($query) use ($request) {
+            ->when($request->filled('year'), function ($query) use ($request) {
                 if ($request->filled('months') && is_array($request->months)) {
-                    $query->where(function($q) use ($request) {
+                    $query->where(function ($q) use ($request) {
                         foreach ($request->months as $month) {
                             $q->orWhere('created_at', 'like', "{$request->year}-{$month}%");
                         }
@@ -53,19 +52,19 @@ class RegistrationController extends Controller
                 } else {
                     $query->whereYear('created_at', $request->year);
                 }
-            }, function($query) use ($request) {
+            }, function ($query) use ($request) {
                 if ($request->filled('months') && is_array($request->months)) {
-                    $query->where(function($q) use ($request) {
+                    $query->where(function ($q) use ($request) {
                         foreach ($request->months as $month) {
                             $q->orWhereMonth('created_at', $month);
                         }
                     });
                 }
             })
-            ->when($request->filled('status') && $request->status !== 'all', function($query) use ($request) {
+            ->when($request->filled('status') && $request->status !== 'all', function ($query) use ($request) {
                 $query->where('status', $request->status);
             })
-            ->when($request->filled('type') && $request->type !== 'all', function($query) use ($request) {
+            ->when($request->filled('type') && $request->type !== 'all', function ($query) use ($request) {
                 $query->where('type', $request->type);
             })
             ->orderByDesc('created_at')
@@ -83,7 +82,7 @@ class RegistrationController extends Controller
     public function updateStatus(Request $request, Registration $registration)
     {
         $request->validate([
-            'status' => 'required|in:menunggu,diterima,ditolak,selesai'
+            'status' => 'required|in:menunggu,diterima,ditolak,selesai',
         ]);
 
         $registration->update(['status' => $request->status]);
@@ -94,6 +93,7 @@ class RegistrationController extends Controller
     public function destroy(Registration $registration)
     {
         $registration->delete();
+
         return back()->with('success', 'Data pendaftaran berhasil dihapus.');
     }
 }

@@ -1,9 +1,8 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
-use Illuminate\Support\Facades\Route;
-
 use App\Http\Controllers\PublicController;
+use Illuminate\Support\Facades\Route;
 
 Route::get('/', [PublicController::class, 'dashboard'])->name('public.dashboard');
 Route::get('/daftar/magang', [PublicController::class, 'daftarMagang'])->name('public.daftar_magang');
@@ -13,13 +12,13 @@ Route::post('/daftar/penelitian', [PublicController::class, 'storePenelitian'])-
 Route::get('/cek-status', [PublicController::class, 'cekStatus'])->name('public.cek_status');
 Route::post('/cek-status', [PublicController::class, 'searchStatus'])->name('public.search_status');
 
+use App\Http\Controllers\Admin\QuotaController;
 use App\Http\Controllers\Admin\RegistrationController;
 use App\Http\Controllers\Admin\UserController;
-use App\Http\Controllers\Admin\QuotaController;
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', [RegistrationController::class, 'dashboard'])->name('dashboard');
-    
+
     // Data Pendaftaran (Petugas & Admin)
     Route::get('/registrations', [RegistrationController::class, 'index'])->name('admin.registrations.index');
     Route::get('/registrations/{registration}', [RegistrationController::class, 'show'])->name('admin.registrations.show');
