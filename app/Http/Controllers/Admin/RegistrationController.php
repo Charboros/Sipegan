@@ -11,13 +11,22 @@ class RegistrationController extends Controller
 {
     public function dashboard()
     {
+        $statsData = Registration::selectRaw('
+            COUNT(*) as total,
+            SUM(status = "menunggu") as menunggu,
+            SUM(status = "diterima") as diterima,
+            SUM(status = "ditolak") as ditolak,
+            SUM(type = "magang") as magang,
+            SUM(type = "penelitian") as penelitian
+        ')->first();
+
         $stats = [
-            'total' => Registration::count(),
-            'menunggu' => Registration::where('status', 'menunggu')->count(),
-            'diterima' => Registration::where('status', 'diterima')->count(),
-            'ditolak' => Registration::where('status', 'ditolak')->count(),
-            'magang' => Registration::where('type', 'magang')->count(),
-            'penelitian' => Registration::where('type', 'penelitian')->count(),
+            'total' => $statsData->total ?? 0,
+            'menunggu' => $statsData->menunggu ?? 0,
+            'diterima' => $statsData->diterima ?? 0,
+            'ditolak' => $statsData->ditolak ?? 0,
+            'magang' => $statsData->magang ?? 0,
+            'penelitian' => $statsData->penelitian ?? 0,
         ];
 
         return view('admin.dashboard', compact('stats'));
@@ -25,49 +34,44 @@ class RegistrationController extends Controller
 
     public function index(Request $request)
     {
-        $query = Registration::query();
-
-        // 1. Pencarian Global (Nama, NIM/NISN, Instansi)
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('nim_nisn', 'like', "%{$search}%")
-                  ->orWhere('institution', 'like', "%{$search}%");
-            });
-        }
-
-        // 2. Filter Tahun & Bulan Pendaftaran
-        if ($request->filled('year')) {
-            $year = $request->year;
-            if ($request->filled('months') && is_array($request->months)) {
-                $query->where(function($q) use ($year, $request) {
-                    foreach ($request->months as $month) {
-                        $q->orWhere('created_at', 'like', "{$year}-{$month}%");
-                    }
+        $registrations = Registration::query()
+            ->when($request->filled('search'), function($query) use ($request) {
+                $search = $request->search;
+                $query->where(function($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%")
+                      ->orWhere('nim_nisn', 'like', "%{$search}%")
+                      ->orWhere('institution', 'like', "%{$search}%");
                 });
-            } else {
-                $query->where('created_at', 'like', "{$year}-%");
-            }
-        } elseif ($request->filled('months') && is_array($request->months)) {
-            $query->where(function($q) use ($request) {
-                foreach ($request->months as $month) {
-                    $q->orWhere('created_at', 'like', "%-{$month}-%");
+            })
+            ->when($request->filled('year'), function($query) use ($request) {
+                if ($request->filled('months') && is_array($request->months)) {
+                    $query->where(function($q) use ($request) {
+                        foreach ($request->months as $month) {
+                            $q->orWhere('created_at', 'like', "{$request->year}-{$month}%");
+                        }
+                    });
+                } else {
+                    $query->whereYear('created_at', $request->year);
                 }
-            });
-        }
+            }, function($query) use ($request) {
+                if ($request->filled('months') && is_array($request->months)) {
+                    $query->where(function($q) use ($request) {
+                        foreach ($request->months as $month) {
+                            $q->orWhereMonth('created_at', $month);
+                        }
+                    });
+                }
+            })
+            ->when($request->filled('status') && $request->status !== 'all', function($query) use ($request) {
+                $query->where('status', $request->status);
+            })
+            ->when($request->filled('type') && $request->type !== 'all', function($query) use ($request) {
+                $query->where('type', $request->type);
+            })
+            ->orderByDesc('created_at')
+            ->paginate(15)
+            ->appends($request->query());
 
-        // 3. Filter Status
-        if ($request->filled('status') && $request->status !== 'all') {
-            $query->where('status', $request->status);
-        }
-
-        // 4. Filter Jenis
-        if ($request->filled('type') && $request->type !== 'all') {
-            $query->where('type', $request->type);
-        }
-
-        $registrations = $query->orderBy('created_at', 'desc')->paginate(15)->appends($request->query());
         return view('admin.registrations.index', compact('registrations'));
     }
 

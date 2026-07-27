@@ -11,14 +11,16 @@ class PublicController extends Controller
     {
         $quotas = \App\Models\Quota::orderBy('month', 'asc')->get();
         
+        // Optimasi: Ambil semua jumlah pendaftar per bulan dalam 1 kueri agregasi
+        $usedMagangCounts = Registration::selectRaw('DATE_FORMAT(created_at, "%Y-%m") as month, COUNT(*) as total')
+            ->where('type', 'magang')
+            ->whereNotIn('status', ['ditolak'])
+            ->groupBy('month')
+            ->pluck('total', 'month');
+        
         $quotaData = [];
         foreach ($quotas as $q) {
-            $usedMagang = Registration::where('type', 'magang')
-                ->whereNotIn('status', ['ditolak'])
-                ->whereYear('created_at', date('Y', strtotime($q->month)))
-                ->whereMonth('created_at', date('m', strtotime($q->month)))
-                ->count();
-                
+            $usedMagang = $usedMagangCounts[$q->month] ?? 0;
             $quotaData[] = [
                 'month' => $q->month,
                 'available_magang' => max(0, $q->quota_magang - $usedMagang),
