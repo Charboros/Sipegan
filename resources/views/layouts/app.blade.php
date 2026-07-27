@@ -18,17 +18,51 @@
 
         /* ── Sidebar ── */
         .sidebar {
-            width: 68px;
             flex-shrink: 0;
             display: flex;
             flex-direction: column;
             background: linear-gradient(160deg, #1e3a8a 0%, #1d4ed8 60%, #2563eb 100%);
-            transition: width 0.25s cubic-bezier(0.4,0,0.2,1);
             overflow: hidden;
-            position: relative;
             z-index: 50;
         }
-        .sidebar:hover { width: 230px; }
+
+        /* Desktop Sidebar (Left, Hover Expand) */
+        @media (min-width: 768px) {
+            .sidebar {
+                width: 68px;
+                position: relative;
+                transition: width 0.25s cubic-bezier(0.4,0,0.2,1);
+            }
+            .sidebar:hover { width: 230px; }
+            .sidebar:hover .brand-text { opacity: 1; pointer-events: auto; }
+            .sidebar:hover .nav-label { opacity: 1; pointer-events: auto; }
+            .sidebar:hover .sidebar-dropdown { opacity: 1; pointer-events: auto; }
+            .sidebar:hover .nav-section-label { opacity: 1; }
+            .sidebar:hover .user-info { opacity: 1; }
+            .sidebar:hover .btn-logout-text { opacity: 1; }
+            .sidebar:hover .nav-tooltip { display: none; }
+        }
+
+        /* Mobile Sidebar (Right, Offcanvas) */
+        @media (max-width: 767px) {
+            .sidebar {
+                position: fixed;
+                top: 0;
+                right: 0;
+                bottom: 0;
+                width: 260px;
+                transform: translateX(100%);
+                transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+            }
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            .brand-text, .nav-label, .sidebar-dropdown, .nav-section-label, .user-info, .btn-logout-text {
+                opacity: 1 !important;
+                pointer-events: auto !important;
+            }
+            .nav-tooltip { display: none !important; }
+        }
 
         /* Brand */
         .sidebar-brand {
@@ -57,12 +91,11 @@
             pointer-events: none;
             width: 100%;
         }
-        .sidebar:hover .brand-text { opacity: 1; pointer-events: auto; }
         .brand-text p:first-child { font-size: 1.15rem; font-weight: 800; color: white; margin: 0; line-height: 1.2; }
         .brand-text p:last-child { font-size: 0.75rem; color: rgba(255,255,255,0.75); margin: 0; line-height: 1.2; }
 
         /* Nav */
-        .sidebar-nav { flex: 1; padding: 1rem 0.625rem; display: flex; flex-direction: column; gap: 0.25rem; overflow: hidden; }
+        .sidebar-nav { flex: 1; padding: 1rem 0.625rem; display: flex; flex-direction: column; gap: 0.25rem; overflow-y: auto; overflow-x: hidden; }
 
         .nav-item {
             display: flex;
@@ -102,17 +135,12 @@
             transition: opacity 0.12s 0.05s;
             pointer-events: none;
         }
-        .sidebar:hover .nav-label { opacity: 1; pointer-events: auto; }
 
         /* Dropdown Submenu */
         .sidebar-dropdown {
             opacity: 0;
             pointer-events: none;
             transition: opacity 0.15s ease-in-out;
-        }
-        .sidebar:hover .sidebar-dropdown { 
-            opacity: 1; 
-            pointer-events: auto; 
         }
 
         /* Tooltip saat sidebar collapsed */
@@ -252,10 +280,13 @@
         ::-webkit-scrollbar-thumb:hover { background: rgba(148,163,184,0.6); }
     </style>
 </head>
-<body class="antialiased bg-slate-100 flex h-screen overflow-hidden">
+<body class="antialiased bg-slate-100 flex h-screen overflow-hidden" x-data="{ mobileMenuOpen: false }">
+
+    {{-- Mobile Overlay --}}
+    <div x-show="mobileMenuOpen" @click="mobileMenuOpen = false" style="display: none;" x-transition.opacity class="fixed inset-0 bg-slate-900/50 z-40 md:hidden cursor-pointer"></div>
 
     {{-- ══════════════ SIDEBAR ══════════════ --}}
-    <aside class="sidebar">
+    <aside class="sidebar" :class="mobileMenuOpen ? 'open' : ''">
 
         {{-- Brand --}}
         <div class="sidebar-brand">
@@ -366,12 +397,32 @@
 
         {{-- Top Header --}}
         @isset($header)
-            <header class="bg-blue-800/90 backdrop-blur-md border-b border-blue-900 shrink-0 sticky top-0 z-40 transition-all duration-300 shadow-md">
-                <div class="px-6 py-4 flex items-center justify-between">
+            <header class="bg-blue-800/90 backdrop-blur-md border-b border-blue-900 shrink-0 sticky top-0 z-30 transition-all duration-300 shadow-md">
+                <div class="px-4 md:px-6 py-4 flex items-center justify-between">
                     {{-- Judul Halaman --}}
-                    <div class="text-white w-full">
+                    <div class="text-white flex-1 overflow-hidden">
                         {{ $header }}
                     </div>
+                    {{-- Hamburger Menu (Mobile Only) --}}
+                    <button @click="mobileMenuOpen = true" type="button" class="md:hidden ml-4 p-2 -mr-2 text-white hover:bg-white/10 rounded-lg transition">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16m-7 6h7"></path>
+                        </svg>
+                    </button>
+                </div>
+            </header>
+        @else
+            {{-- Default Mobile Header --}}
+            <header class="md:hidden bg-blue-800/90 backdrop-blur-md border-b border-blue-900 shrink-0 sticky top-0 z-30 shadow-md">
+                <div class="px-4 py-4 flex items-center justify-between">
+                    <div class="flex items-center gap-2 font-bold text-lg text-white">
+                        <img src="{{ asset('images/tegal-logo.png') }}" class="w-6 h-6 object-contain" alt="Logo"> SIPEGAN
+                    </div>
+                    <button @click="mobileMenuOpen = true" type="button" class="p-2 -mr-2 text-white hover:bg-white/10 rounded-lg transition">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16m-7 6h7"></path>
+                        </svg>
+                    </button>
                 </div>
             </header>
         @endisset
