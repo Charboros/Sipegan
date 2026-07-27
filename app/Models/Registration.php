@@ -8,7 +8,6 @@ class Registration extends Model
 {
     //
     protected $fillable = [
-        'registration_code',
         'type',
         'name',
         'email',

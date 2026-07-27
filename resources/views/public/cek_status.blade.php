@@ -6,7 +6,7 @@
     <div class="max-w-4xl mx-auto mt-4 space-y-6">
         
         {{-- Success Message --}}
-        @if(session('registered_code'))
+        @if(session('success'))
         <div class="bg-green-50 border-2 border-green-500 rounded-2xl p-6 md:p-8 text-center shadow-lg relative mb-8 animate-slide-down">
             <div class="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
                 <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>

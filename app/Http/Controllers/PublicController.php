@@ -60,14 +60,12 @@ class PublicController extends Controller
         }
 
         $validated['type'] = 'magang';
-        $validated['registration_code'] = 'SPG-M-' . date('Ymd') . '-' . strtoupper(substr(uniqid(), -4));
         $validated['status'] = 'menunggu';
         $validated['magang_months'] = array_values($validated['magang_months']);
 
         Registration::create($validated);
 
         return redirect()->route('public.cek_status')
-            ->with('registered_code', $validated['registration_code'])
             ->with('success', 'Pendaftaran Magang berhasil dikirim!');
     }
 
@@ -96,13 +94,11 @@ class PublicController extends Controller
         }
 
         $validated['type'] = 'penelitian';
-        $validated['registration_code'] = 'SPG-P-' . date('Ymd') . '-' . strtoupper(substr(uniqid(), -4));
         $validated['status'] = 'menunggu';
 
         Registration::create($validated);
 
         return redirect()->route('public.cek_status')
-            ->with('registered_code', $validated['registration_code'])
             ->with('success', 'Pendaftaran Penelitian berhasil dikirim!');
     }
 

@@ -56,7 +56,6 @@ class DatabaseSeeder extends Seeder
             $date = "{$currentYear}-{$month}-" . sprintf('%02d', rand(1, 28));
 
             \App\Models\Registration::create([
-                'registration_code' => 'REG-' . strtoupper(substr(md5(uniqid()), 0, 8)),
                 'type' => $type,
                 'name' => 'Peserta ' . ucfirst($type) . ' ' . $i,
                 'email' => "peserta{$i}@example.com",
