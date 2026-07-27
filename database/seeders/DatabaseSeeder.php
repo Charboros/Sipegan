@@ -18,9 +18,18 @@ class DatabaseSeeder extends Seeder
         User::updateOrCreate(
             ['username' => 'admin'],
             [
-                'name' => 'Admin SIPEGAN',
-                'password' => bcrypt('password'),
+                'name' => 'admin',
+                'password' => bcrypt('12345678'),
                 'role' => 'admin',
+            ]
+        );
+
+        User::updateOrCreate(
+            ['username' => 'petugas'],
+            [
+                'name' => 'petugas',
+                'password' => bcrypt('12345678'),
+                'role' => 'petugas',
             ]
         );
 
@@ -37,8 +46,8 @@ class DatabaseSeeder extends Seeder
                 ]
             );
 
-            // Add dummy registrations for each month
-            $numRegs = rand(0, 5);
+            // Add dummy registrations for each month (1-3 registrations)
+            $numRegs = rand(1, 3);
             for ($i = 0; $i < $numRegs; $i++) {
                 $type = (rand(0, 1) == 0) ? 'magang' : 'penelitian';
                 $statusList = ['menunggu', 'diterima', 'ditolak', 'selesai'];
