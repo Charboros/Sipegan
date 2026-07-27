@@ -240,57 +240,49 @@
         ::-webkit-scrollbar-thumb { background: rgba(148,163,184,0.4); border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: rgba(148,163,184,0.6); }
 
-        /* ── Mobile Bottom Navigation ── */
-        @media (max-width: 768px) {
-            body {
-                flex-direction: column !important;
-                padding-bottom: 70px; /* Space for the bottom nav */
-            }
+        /* Desktop Sidebar (Left, Hover Expand) */
+        @media (min-width: 768px) {
             .sidebar {
-                width: 100% !important;
-                height: 70px;
-                flex-direction: row;
-                justify-content: space-around;
+                width: 68px;
+                position: relative;
+                transition: width 0.25s cubic-bezier(0.4,0,0.2,1);
+            }
+            .sidebar:hover { width: 230px; }
+            .sidebar:hover .brand-text { opacity: 1; pointer-events: auto; }
+            .sidebar:hover .nav-label { opacity: 1; pointer-events: auto; }
+            .sidebar:hover .nav-section-label { opacity: 1; }
+            .sidebar:hover .nav-tooltip { display: none; }
+        }
+
+        /* Mobile Sidebar (Right, Offcanvas) */
+        @media (max-width: 767px) {
+            .sidebar {
                 position: fixed;
+                top: 0;
+                right: 0;
                 bottom: 0;
-                left: 0;
-                z-index: 50;
-                border-top: 1px solid rgba(255,255,255,0.1);
+                width: 260px;
+                transform: translateX(100%);
+                transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
             }
-            .sidebar-brand, .sidebar-user, .nav-section-label, .nav-tooltip, .nav-label, .btn-logout-text {
-                display: none !important;
+            .sidebar.open {
+                transform: translateX(0);
             }
-            .sidebar-nav {
-                flex-direction: row;
-                padding: 0;
-                justify-content: space-around;
-                align-items: center;
-                width: 100%;
-                gap: 0;
+            .brand-text, .nav-label, .nav-section-label {
+                opacity: 1 !important;
+                pointer-events: auto !important;
             }
-            .nav-item {
-                flex-direction: column;
-                gap: 4px;
-                padding: 0.5rem;
-                justify-content: center;
-                align-items: center;
-                border-radius: 0;
-                min-height: auto;
-            }
-            .nav-icon {
-                width: 24px;
-                height: 24px;
-                margin: 0;
-            }
-            /* Hide the user/login area on mobile nav for simplicity, or we can keep it as an icon */
-            .sidebar-user { display: none; }
+            .nav-tooltip { display: none !important; }
         }
     </style>
 </head>
-<body class="antialiased bg-slate-100 flex flex-row-reverse h-screen overflow-hidden">
+<body class="antialiased bg-slate-100 flex h-screen overflow-hidden" x-data="{ mobileMenuOpen: false }">
+
+    {{-- Mobile Overlay --}}
+    <div x-show="mobileMenuOpen" @click="mobileMenuOpen = false" style="display: none;" x-transition.opacity class="fixed inset-0 bg-slate-900/50 z-40 md:hidden cursor-pointer"></div>
 
     {{-- ══════════════ SIDEBAR ══════════════ --}}
-    <aside class="sidebar">
+    <aside class="sidebar" :class="mobileMenuOpen ? 'open' : ''">
 
         {{-- Brand --}}
         <div class="sidebar-brand">
@@ -349,16 +341,6 @@
                 <span class="nav-tooltip">Cari Resi Pendaftaran</span>
             </a>
         </nav>
-
-        {{-- Login Area --}}
-        <div class="sidebar-user">
-            <a href="{{ route('login') }}" class="btn-logout" style="background: rgba(255,255,255,0.15);">
-                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/>
-                </svg>
-                <span class="btn-logout-text">Login Petugas</span>
-            </a>
-        </div>
     </aside>
 
     {{-- ══════════════ MAIN CONTENT ══════════════ --}}
@@ -366,12 +348,32 @@
 
         {{-- Top Header --}}
         @isset($header)
-            <header class="bg-blue-800/90 backdrop-blur-md border-b border-blue-900 shrink-0 sticky top-0 z-40 transition-all duration-300 shadow-md">
-                <div class="px-6 py-4 flex items-center justify-between">
+            <header class="bg-blue-800/90 backdrop-blur-md border-b border-blue-900 shrink-0 sticky top-0 z-30 transition-all duration-300 shadow-md">
+                <div class="px-4 md:px-6 py-4 flex items-center justify-between">
                     {{-- Judul Halaman --}}
-                    <div class="text-white w-full">
+                    <div class="text-white flex-1 overflow-hidden">
                         {{ $header }}
                     </div>
+                    {{-- Hamburger Menu (Mobile Only) --}}
+                    <button @click="mobileMenuOpen = true" type="button" class="md:hidden ml-4 p-2 -mr-2 text-white hover:bg-white/10 rounded-lg transition">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16m-7 6h7"></path>
+                        </svg>
+                    </button>
+                </div>
+            </header>
+        @else
+            {{-- Default Mobile Header --}}
+            <header class="md:hidden bg-blue-800/90 backdrop-blur-md border-b border-blue-900 shrink-0 sticky top-0 z-30 shadow-md">
+                <div class="px-4 py-4 flex items-center justify-between">
+                    <div class="flex items-center gap-2 font-bold text-lg text-white">
+                        <img src="{{ asset('images/tegal-logo.png') }}" class="w-6 h-6 object-contain" alt="Logo"> SIPEGAN
+                    </div>
+                    <button @click="mobileMenuOpen = true" type="button" class="p-2 -mr-2 text-white hover:bg-white/10 rounded-lg transition">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16m-7 6h7"></path>
+                        </svg>
+                    </button>
                 </div>
             </header>
         @endisset
