@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Faq;
 use App\Models\Quota;
 use App\Models\Registration;
 use Illuminate\Http\Request;
@@ -127,5 +128,22 @@ class PublicController extends Controller
         }
 
         return view('public.cek_status', compact('registrations'));
+    }
+
+    public function faq(Request $request)
+    {
+        $query = Faq::where('is_active', true);
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('question', 'LIKE', "%{$search}%")
+                  ->orWhere('answer', 'LIKE', "%{$search}%");
+            });
+        }
+
+        $faqs = $query->orderBy('question', 'asc')->get();
+
+        return view('public.faq', compact('faqs'));
     }
 }

@@ -11,13 +11,17 @@ Route::get('/daftar/penelitian', [PublicController::class, 'daftarPenelitian'])-
 Route::post('/daftar/penelitian', [PublicController::class, 'storePenelitian'])->name('public.store_penelitian');
 Route::get('/cek-status', [PublicController::class, 'cekStatus'])->name('public.cek_status');
 Route::post('/cek-status', [PublicController::class, 'searchStatus'])->name('public.search_status');
+Route::get('/faq', [PublicController::class, 'faq'])->name('public.faq');
 
+use App\Http\Controllers\Admin\FaqController;
 use App\Http\Controllers\Admin\QuotaController;
 use App\Http\Controllers\Admin\RegistrationController;
-use App\Http\Controllers\Admin\UserController;
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', [RegistrationController::class, 'dashboard'])->name('dashboard');
+
+    // FAQ Management (Petugas & Admin)
+    Route::resource('faqs', FaqController::class)->except(['show', 'create', 'edit']);
 
     // Data Pendaftaran (Petugas & Admin)
     Route::get('/registrations', [RegistrationController::class, 'index'])->name('admin.registrations.index');

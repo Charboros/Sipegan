@@ -319,6 +319,9 @@
                     <a href="{{ route('quotas.index') }}" class="nav-item !min-h-[34px] !py-1.5 {{ request()->routeIs('quotas.*') ? 'active' : '' }}">
                         <span class="text-[0.8rem]">Konfigurasi Kuota</span>
                     </a>
+                    <a href="{{ route('faqs.index') }}" class="nav-item !min-h-[34px] !py-1.5 {{ request()->routeIs('faqs.*') ? 'active' : '' }}">
+                        <span class="text-[0.8rem]">Kelola FAQ</span>
+                    </a>
                     @if(Auth::user()->isAdmin())
                     <a href="{{ route('konfigurasi.index') }}" class="nav-item !min-h-[34px] !py-1.5 {{ request()->routeIs('konfigurasi.*') ? 'active' : '' }}">
                         <span class="text-[0.8rem]">Konfigurasi Akun</span>
