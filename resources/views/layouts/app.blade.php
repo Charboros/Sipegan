@@ -16,6 +16,12 @@
     <style>
         body { font-family: 'Inter', sans-serif; }
 
+        /* Sembunyikan Eye Icon bawaan dari browser (Edge/IE) */
+        input[type="password"]::-ms-reveal,
+        input[type="password"]::-ms-clear {
+            display: none;
+        }
+
         /* ── Sidebar ── */
         .sidebar {
             width: 68px;
