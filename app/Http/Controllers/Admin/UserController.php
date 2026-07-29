@@ -17,22 +17,37 @@ class UserController extends Controller
         return view('admin.users.index', compact('users'));
     }
 
-    public function store(Request $request)
+    public function store(\App\Http\Requests\StoreUserRequest $request)
     {
-        $request->validate([
-            'username' => ['required', 'string', 'max:255', 'unique:'.User::class],
-            'password' => ['required', Rules\Password::defaults()],
-            'role' => ['required', 'in:admin,petugas'],
-        ]);
+        $validated = $request->validated();
 
         User::create([
-            'name' => $request->username,
-            'username' => $request->username,
-            'password' => Hash::make($request->password),
-            'role' => $request->role,
+            'name' => $validated['username'],
+            'username' => $validated['username'],
+            'password' => Hash::make($validated['password']),
+            'role' => $validated['role'],
         ]);
 
         return back()->with('success', 'Akun petugas berhasil ditambahkan.');
+    }
+
+    public function update(\App\Http\Requests\UpdateUserRequest $request, User $user)
+    {
+        $validated = $request->validated();
+        
+        $data = [
+            'name' => $validated['username'],
+            'username' => $validated['username'],
+            'role' => $validated['role'],
+        ];
+
+        if (!empty($validated['password'])) {
+            $data['password'] = Hash::make($validated['password']);
+        }
+
+        $user->update($data);
+
+        return back()->with('success', 'Akun petugas berhasil diperbarui.');
     }
 
     public function destroy(User $user)

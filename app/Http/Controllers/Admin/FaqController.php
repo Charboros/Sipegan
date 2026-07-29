@@ -15,34 +15,20 @@ class FaqController extends Controller
         return view('admin.faqs.index', compact('faqs'));
     }
 
-    public function store(Request $request)
+    public function store(\App\Http\Requests\FaqRequest $request)
     {
-        $validated = $request->validate([
-            'question' => 'required|string|max:255',
-            'answer' => 'required|string',
-            'is_active' => 'boolean',
-            'order' => 'integer',
-        ]);
-
+        $validated = $request->validated();
         $validated['is_active'] = $request->has('is_active');
-        $validated['order'] = $request->order ?? 0;
 
         Faq::create($validated);
 
         return redirect()->route('faqs.index')->with('success', 'FAQ berhasil ditambahkan.');
     }
 
-    public function update(Request $request, Faq $faq)
+    public function update(\App\Http\Requests\FaqRequest $request, Faq $faq)
     {
-        $validated = $request->validate([
-            'question' => 'required|string|max:255',
-            'answer' => 'required|string',
-            'is_active' => 'boolean',
-            'order' => 'integer',
-        ]);
-
+        $validated = $request->validated();
         $validated['is_active'] = $request->has('is_active');
-        $validated['order'] = $request->order ?? 0;
 
         $faq->update($validated);
 

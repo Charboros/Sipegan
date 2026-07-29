@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreMagangRequest;
+use App\Http\Requests\StorePenelitianRequest;
 use App\Models\Faq;
 use App\Models\Quota;
 use App\Models\Registration;
@@ -37,26 +39,9 @@ class PublicController extends Controller
         return view('public.daftar_magang');
     }
 
-    public function storeMagang(Request $request)
+    public function storeMagang(StoreMagangRequest $request)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|max:255',
-            'phone' => 'required|string|max:20',
-            'nim_nisn' => 'required|string|max:50',
-            'participant_category' => 'required|in:Sekolah Menengah Kejuruan,Perguruan Tinggi',
-            'institution' => 'required|string|max:255',
-            'study_program' => 'required|string|max:255',
-            'birth_place' => 'required|string|max:255',
-            'birth_date' => 'required|date',
-            'gender' => 'required|in:Laki-laki,Perempuan',
-            'address' => 'required|string',
-            'magang_months' => 'required|array',
-            'magang_months.*' => 'string',
-            'advisor_name' => 'nullable|string|max:255',
-            'advisor_phone' => 'nullable|string|max:50',
-            'document' => 'required|file|mimes:pdf|max:2048',
-        ]);
+        $validated = $request->validated();
 
         if ($request->hasFile('document')) {
             $path = $request->file('document')->store('documents', 'public');
@@ -78,19 +63,9 @@ class PublicController extends Controller
         return view('public.daftar_penelitian');
     }
 
-    public function storePenelitian(Request $request)
+    public function storePenelitian(StorePenelitianRequest $request)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|max:255',
-            'phone' => 'required|string|max:20',
-            'nim_nisn' => 'required|string|max:50',
-            'institution' => 'required|string|max:255',
-            'study_program' => 'required|string|max:255',
-            'research_title' => 'required|string|max:255',
-            'start_date' => 'required|date',
-            'document' => 'required|file|mimes:pdf|max:2048',
-        ]);
+        $validated = $request->validated();
 
         if ($request->hasFile('document')) {
             $path = $request->file('document')->store('documents', 'public');
@@ -134,13 +109,8 @@ class PublicController extends Controller
     {
         $query = Faq::where('is_active', true);
 
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function($q) use ($search) {
-                $q->where('question', 'LIKE', "%{$search}%")
-                  ->orWhere('answer', 'LIKE', "%{$search}%");
-            });
-        }
+        // Fitur pencarian sekarang ditangani di sisi klien (Live Search Alpine.js)
+        // sehingga kita memuat semua FAQ yang aktif.
 
         $faqs = $query->orderBy('question', 'asc')->get();
 

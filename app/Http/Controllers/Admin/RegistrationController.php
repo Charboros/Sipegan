@@ -34,44 +34,23 @@ class RegistrationController extends Controller
     public function index(Request $request)
     {
         $registrations = Registration::query()
-            ->when($request->filled('search'), function ($query) use ($request) {
-                $search = $request->search;
-                $query->where(function ($q) use ($search) {
-                    $q->where('name', 'like', "%{$search}%")
-                        ->orWhere('nim_nisn', 'like', "%{$search}%")
-                        ->orWhere('institution', 'like', "%{$search}%");
-                });
-            })
-            ->when($request->filled('year'), function ($query) use ($request) {
-                if ($request->filled('months') && is_array($request->months)) {
-                    $query->where(function ($q) use ($request) {
-                        foreach ($request->months as $month) {
-                            $q->orWhere('created_at', 'like', "{$request->year}-{$month}%");
-                        }
-                    });
-                } else {
-                    $query->whereYear('created_at', $request->year);
-                }
-            }, function ($query) use ($request) {
-                if ($request->filled('months') && is_array($request->months)) {
-                    $query->where(function ($q) use ($request) {
-                        foreach ($request->months as $month) {
-                            $q->orWhereMonth('created_at', $month);
-                        }
-                    });
-                }
-            })
-            ->when($request->filled('status') && $request->status !== 'all', function ($query) use ($request) {
-                $query->where('status', $request->status);
-            })
-            ->when($request->filled('type') && $request->type !== 'all', function ($query) use ($request) {
-                $query->where('type', $request->type);
-            })
+            ->filter([
+                'search' => $request->search,
+                'year'   => $request->year,
+                'months' => $request->months,
+                'status' => $request->status,
+                'type'   => $request->type,
+            ])
             ->orderByDesc('created_at')
             ->paginate(15)
             ->appends($request->query());
 
-        return view('admin.registrations.index', compact('registrations'));
+        $availableYears = Registration::selectRaw('YEAR(created_at) as year')
+            ->distinct()
+            ->orderBy('year', 'desc')
+            ->pluck('year');
+
+        return view('admin.registrations.index', compact('registrations', 'availableYears'));
     }
 
     public function show(Registration $registration)
@@ -79,13 +58,11 @@ class RegistrationController extends Controller
         return view('admin.registrations.show', compact('registration'));
     }
 
-    public function updateStatus(Request $request, Registration $registration)
+    public function updateStatus(\App\Http\Requests\UpdateRegistrationStatusRequest $request, Registration $registration)
     {
-        $request->validate([
-            'status' => 'required|in:menunggu,diterima,ditolak,selesai',
-        ]);
+        $validated = $request->validated();
 
-        $registration->update(['status' => $request->status]);
+        $registration->update(['status' => $validated['status']]);
 
         return back()->with('success', 'Status pendaftaran berhasil diperbarui.');
     }

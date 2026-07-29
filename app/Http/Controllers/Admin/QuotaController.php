@@ -27,13 +27,11 @@ class QuotaController extends Controller
         return view('admin.quotas.index', compact('quotas', 'currentYear'));
     }
 
-    public function update(Request $request, Quota $quota)
+    public function update(\App\Http\Requests\UpdateQuotaRequest $request, Quota $quota)
     {
-        $request->validate([
-            'quota_magang' => 'required|integer|min:0',
-        ]);
+        $validated = $request->validated();
 
-        $quota->update($request->only(['quota_magang']));
+        $quota->update($validated);
 
         return redirect()->route('quotas.index')->with('success', 'Jumlah kuota magang berhasil diperbarui.');
     }

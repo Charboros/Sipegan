@@ -5,41 +5,62 @@
 
     <div class="max-w-4xl mx-auto mt-6 space-y-6">
         
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 md:p-8">
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 md:p-8" 
+             x-data="{ 
+                searchQuery: '{{ request('search') }}', 
+                activeFaq: null,
+                hasResults: true,
+                checkMatches() {
+                    let term = this.searchQuery.toLowerCase();
+                    let items = document.querySelectorAll('.faq-item');
+                    let count = 0;
+                    items.forEach(item => {
+                        let text = item.getAttribute('data-search').toLowerCase();
+                        if (term === '' || text.includes(term)) {
+                            count++;
+                        }
+                    });
+                    this.hasResults = count > 0;
+                }
+             }"
+             x-init="$watch('searchQuery', () => checkMatches()); $nextTick(() => checkMatches());">
             <h3 class="text-2xl font-black text-slate-800 mb-6 text-center">Bantuan & FAQ</h3>
             <p class="text-center text-slate-600 mb-8 max-w-2xl mx-auto">Temukan jawaban untuk pertanyaan umum seputar pendaftaran magang dan penelitian di Dinas Kependudukan dan Pencatatan Sipil Kabupaten Tegal.</p>
 
             {{-- Search Form --}}
-            <form action="{{ route('public.faq') }}" method="GET" class="mb-8 max-w-xl mx-auto relative">
-                <div class="relative">
+            <form action="{{ route('public.faq') }}" method="GET" class="mb-8 max-w-2xl mx-auto relative flex gap-3">
+                <div class="relative flex-1">
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                         <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                     </div>
-                    <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari pertanyaan atau kata kunci..." 
+                    <input type="text" name="search" x-model="searchQuery" placeholder="Cari pertanyaan atau kata kunci..." 
                            class="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all shadow-sm">
-                    @if(request('search'))
-                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center">
-                            <a href="{{ route('public.faq') }}" class="text-slate-400 hover:text-red-500 transition-colors">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                            </a>
-                        </div>
-                    @endif
+                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center" x-show="searchQuery.length > 0" style="display: none;">
+                        <button type="button" @click="searchQuery = ''; activeFaq = null; checkMatches()" class="text-slate-400 hover:text-red-500 transition-colors">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                        </button>
+                    </div>
                 </div>
+                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-xl transition shadow-sm flex items-center justify-center gap-2">
+                    <span class="hidden sm:inline">Cari</span>
+                    <svg class="w-5 h-5 sm:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                </button>
             </form>
 
             @if($faqs->isEmpty())
                 <div class="bg-blue-50 p-6 rounded-xl border border-blue-100 text-center">
-                    @if(request('search'))
-                        <p class="font-semibold text-blue-800 mb-2">Tidak ditemukan hasil untuk "{{ request('search') }}"</p>
-                        <a href="{{ route('public.faq') }}" class="text-sm text-blue-600 hover:underline">Tampilkan semua FAQ</a>
-                    @else
-                        <p class="font-semibold text-blue-800">Saat ini belum ada data FAQ yang tersedia.</p>
-                    @endif
+                    <p class="font-semibold text-blue-800">Saat ini belum ada data FAQ yang tersedia.</p>
                 </div>
             @else
-                <div class="space-y-4" x-data="{ activeFaq: null }">
+                <div x-show="!hasResults" style="display: none;" class="bg-blue-50 p-6 rounded-xl border border-blue-100 text-center mb-4">
+                    <p class="font-semibold text-blue-800 mb-2">Tidak ditemukan hasil untuk "<span x-text="searchQuery"></span>"</p>
+                    <button type="button" @click="searchQuery = ''; activeFaq = null; checkMatches()" class="text-sm text-blue-600 hover:underline">Tampilkan semua FAQ</button>
+                </div>
+                <div class="space-y-4">
                     @foreach($faqs as $faq)
-                        <div class="border border-slate-200 rounded-xl overflow-hidden transition-all duration-300"
+                        <div class="faq-item border border-slate-200 rounded-xl overflow-hidden transition-all duration-300"
+                             data-search="{{ htmlspecialchars($faq->question . ' ' . $faq->answer) }}"
+                             x-show="searchQuery === '' || $el.getAttribute('data-search').toLowerCase().includes(searchQuery.toLowerCase())"
                              :class="activeFaq === {{ $faq->id }} ? 'ring-2 ring-blue-500 border-transparent shadow-md' : 'hover:border-blue-300 hover:shadow-sm'">
                             <button @click="activeFaq = activeFaq === {{ $faq->id }} ? null : {{ $faq->id }}" 
                                     class="w-full flex items-center justify-between p-5 text-left bg-white hover:bg-slate-50 transition-colors focus:outline-none">

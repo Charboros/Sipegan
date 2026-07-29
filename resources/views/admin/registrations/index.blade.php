@@ -22,7 +22,7 @@
                         <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1">Tahun</label>
                         <select name="year" class="w-full lg:w-28 text-sm rounded-lg border-slate-300 focus:ring-blue-500 focus:border-blue-500">
                             <option value="">Semua</option>
-                            @foreach(range(date('Y') + 1, date('Y') - 4) as $y)
+                            @foreach($availableYears as $y)
                                 <option value="{{ $y }}" {{ request('year') == $y ? 'selected' : '' }}>{{ $y }}</option>
                             @endforeach
                         </select>
@@ -49,18 +49,18 @@
                         <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1">Status</label>
                         <select name="status" class="w-full lg:w-36 text-sm rounded-lg border-slate-300 focus:ring-blue-500 focus:border-blue-500">
                             <option value="all" {{ request('status') == 'all' ? 'selected' : '' }}>Semua Status</option>
-                            <option value="menunggu" {{ request('status') == 'menunggu' ? 'selected' : '' }}>Menunggu</option>
-                            <option value="diterima" {{ request('status') == 'diterima' ? 'selected' : '' }}>Diterima</option>
-                            <option value="ditolak" {{ request('status') == 'ditolak' ? 'selected' : '' }}>Ditolak</option>
-                            <option value="selesai" {{ request('status') == 'selesai' ? 'selected' : '' }}>Selesai</option>
+                            <option value="{{ \App\Models\Registration::STATUS_MENUNGGU }}" {{ request('status') == \App\Models\Registration::STATUS_MENUNGGU ? 'selected' : '' }}>Menunggu</option>
+                            <option value="{{ \App\Models\Registration::STATUS_DITERIMA }}" {{ request('status') == \App\Models\Registration::STATUS_DITERIMA ? 'selected' : '' }}>Diterima</option>
+                            <option value="{{ \App\Models\Registration::STATUS_DITOLAK }}" {{ request('status') == \App\Models\Registration::STATUS_DITOLAK ? 'selected' : '' }}>Ditolak</option>
+                            <option value="{{ \App\Models\Registration::STATUS_SELESAI }}" {{ request('status') == \App\Models\Registration::STATUS_SELESAI ? 'selected' : '' }}>Selesai</option>
                         </select>
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1">Jenis</label>
                         <select name="type" class="w-full lg:w-32 text-sm rounded-lg border-slate-300 focus:ring-blue-500 focus:border-blue-500">
                             <option value="all" {{ request('type') == 'all' ? 'selected' : '' }}>Semua Jenis</option>
-                            <option value="magang" {{ request('type') == 'magang' ? 'selected' : '' }}>Magang</option>
-                            <option value="penelitian" {{ request('type') == 'penelitian' ? 'selected' : '' }}>Penelitian</option>
+                            <option value="{{ \App\Models\Registration::TYPE_MAGANG }}" {{ request('type') == \App\Models\Registration::TYPE_MAGANG ? 'selected' : '' }}>Magang</option>
+                            <option value="{{ \App\Models\Registration::TYPE_PENELITIAN }}" {{ request('type') == \App\Models\Registration::TYPE_PENELITIAN ? 'selected' : '' }}>Penelitian</option>
                         </select>
                     </div>
                     <div class="flex items-center gap-2">
@@ -104,10 +104,10 @@
                             <td class="px-6 py-4">
                                 @php
                                     $statusColors = [
-                                        'menunggu' => 'bg-yellow-100 text-yellow-800',
-                                        'diterima' => 'bg-green-100 text-green-800',
-                                        'ditolak'  => 'bg-red-100 text-red-800',
-                                        'selesai'  => 'bg-blue-100 text-blue-800',
+                                        \App\Models\Registration::STATUS_MENUNGGU => 'bg-yellow-100 text-yellow-800',
+                                        \App\Models\Registration::STATUS_DITERIMA => 'bg-green-100 text-green-800',
+                                        \App\Models\Registration::STATUS_DITOLAK  => 'bg-red-100 text-red-800',
+                                        \App\Models\Registration::STATUS_SELESAI  => 'bg-blue-100 text-blue-800',
                                     ];
                                     $statusClass = $statusColors[$reg->status] ?? 'bg-slate-100 text-slate-800';
                                 @endphp
@@ -121,10 +121,10 @@
                                         @csrf
                                         @method('PATCH')
                                         <select name="status" onchange="this.form.submit()" class="text-xs rounded-lg border-slate-300 focus:ring-blue-500 py-1.5 pl-3 pr-8 cursor-pointer w-full">
-                                            <option value="menunggu" {{ $reg->status == 'menunggu' ? 'selected' : '' }}>Menunggu</option>
-                                            <option value="diterima" {{ $reg->status == 'diterima' ? 'selected' : '' }}>Diterima</option>
-                                            <option value="ditolak" {{ $reg->status == 'ditolak' ? 'selected' : '' }}>Ditolak</option>
-                                            <option value="selesai" {{ $reg->status == 'selesai' ? 'selected' : '' }}>Selesai</option>
+                                            <option value="{{ \App\Models\Registration::STATUS_MENUNGGU }}" {{ $reg->status == \App\Models\Registration::STATUS_MENUNGGU ? 'selected' : '' }}>Menunggu</option>
+                                            <option value="{{ \App\Models\Registration::STATUS_DITERIMA }}" {{ $reg->status == \App\Models\Registration::STATUS_DITERIMA ? 'selected' : '' }}>Diterima</option>
+                                            <option value="{{ \App\Models\Registration::STATUS_DITOLAK }}" {{ $reg->status == \App\Models\Registration::STATUS_DITOLAK ? 'selected' : '' }}>Ditolak</option>
+                                            <option value="{{ \App\Models\Registration::STATUS_SELESAI }}" {{ $reg->status == \App\Models\Registration::STATUS_SELESAI ? 'selected' : '' }}>Selesai</option>
                                         </select>
                                     </form>
                                     <a href="{{ route('admin.registrations.show', $reg->id) }}" class="px-3 py-1.5 bg-blue-100 text-blue-700 hover:bg-blue-200 font-semibold rounded-lg text-xs transition">

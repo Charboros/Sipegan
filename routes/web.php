@@ -16,6 +16,7 @@ Route::get('/faq', [PublicController::class, 'faq'])->name('public.faq');
 use App\Http\Controllers\Admin\FaqController;
 use App\Http\Controllers\Admin\QuotaController;
 use App\Http\Controllers\Admin\RegistrationController;
+use App\Http\Controllers\Admin\UserController;
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', [RegistrationController::class, 'dashboard'])->name('dashboard');
@@ -38,6 +39,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Konfigurasi Users (Admin Only)
     Route::get('/users', [UserController::class, 'index'])->name('konfigurasi.index')->middleware('can:admin');
     Route::post('/users', [UserController::class, 'store'])->name('konfigurasi.store')->middleware('can:admin');
+    Route::patch('/users/{user}', [UserController::class, 'update'])->name('konfigurasi.update')->middleware('can:admin');
     Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('konfigurasi.destroy')->middleware('can:admin');
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
